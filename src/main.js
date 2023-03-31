@@ -3,7 +3,7 @@ import App from "./App.vue";
 import router from "./router";
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
-import { firebaseConfig } from "@/firebase.config";
+import { firebaseConfig } from "../firebase/firebase.config";
 import { VueFire } from "vuefire";
 
 const firebaseApp = initializeApp(firebaseConfig);
