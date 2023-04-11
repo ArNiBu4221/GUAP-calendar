@@ -1,12 +1,3 @@
-<template>
-  <p>aboba</p>
-  <ul>
-    <li v-for="day in daysCol" :key="day.id">
-      <span>{{ day.dayOfWeek }}</span>
-    </li>
-  </ul>
-</template>
-
 <script>
 //import { daysRef } from "@/main";
 import { useCollection } from "vuefire";
