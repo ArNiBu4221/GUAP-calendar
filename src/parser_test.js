@@ -16,7 +16,9 @@ const getRasp = async (group) => {
 getRasp(275).then((res) => {
   const $ = cheerio.load(res.data);
   const $rasp = $(".result h3");
-  const studies = [];
+  const $res = $(".result");
+  const studyTime = $res.find("h4");
+  const studies = $res.find(".study");
   const myClass = {
     day: "",
     numberOfClass: "",
@@ -24,15 +26,32 @@ getRasp(275).then((res) => {
     type: "",
     name: "",
     place: "",
-    teacher: "",
+    teacher: {},
     groups: {},
   };
-  for (let i = 0; i < $rasp.length; i++) {
-    let h = $rasp.eq(i);
-    let day = h.nextUntil("h3");
-    // let $day = cheerio.load(day.toString());
-    // let classes = $day(".study");
-    // console.log("\n", classes.text());
-    console.log("\n", day.toString());
+
+  const allStudies = [];
+  for (let i = 0; i < studies.length; i++) {
+    let myClassI = myClass;
+    let study = studies.eq(i).children();
+    let spanI = study.first();
+    let divI = study.last();
+    //парсим span для назначения направления недели, типа занятий и названия предсмета
+    let spanChildrens = spanI.children();
+    let iner = spanI.contents().filter(function () {
+      return this.nodeType === 3;
+    });
+    myClassI.name = iner.text();
+    myClassI.place = spanChildrens.last().text();
+    if (spanChildrens.length === 3) {
+      myClassI.weekDirection = spanChildrens.eq(0).attr("title");
+      myClassI.type = spanChildrens.eq(1).text();
+    } else {
+      myClassI.weekDirection = "both";
+      myClassI.type = spanChildrens.eq(0).text();
+    }
+    allStudies.push(myClassI);
+    //console.log(spanI.toString(), "\n");
+    // console.log(divI.toString(), "\n");
   }
 });
