@@ -15,9 +15,8 @@ const getRasp = async (group) => {
 };
 getRasp(275).then((res) => {
   const $ = cheerio.load(res.data);
-  const $rasp = $(".result h3");
   const $res = $(".result");
-  const studyTime = $res.find("h4");
+  const $days = $(".result h3");
   const studies = $res.find(".study");
   const myClass = {
     day: "",
@@ -32,11 +31,22 @@ getRasp(275).then((res) => {
 
   const allStudies = [];
   for (let i = 0; i < studies.length; i++) {
-    let myClassI = myClass;
+    let myClassI = {
+      day: "",
+      numberOfClass: "",
+      weekDirection: "",
+      type: "",
+      name: "",
+      place: "",
+      teacher: {},
+      groups: {},
+    };
     let study = studies.eq(i).children();
     let spanI = study.first();
     let divI = study.last();
-    //парсим span для назначения направления недели, типа занятий и названия предсмета
+    /*
+        парсим span для назначения направления недели, типа занятий и названия предсмета
+    */
     let spanChildrens = spanI.children();
     let iner = spanI.contents().filter(function () {
       return this.nodeType === 3;
@@ -54,4 +64,8 @@ getRasp(275).then((res) => {
     //console.log(spanI.toString(), "\n");
     // console.log(divI.toString(), "\n");
   }
+  /*
+      заполняем номера пар
+  */
+
 });
