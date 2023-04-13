@@ -1,6 +1,5 @@
 const axios = require("axios");
 const cheerio = require("cheerio");
-
 const getRasp = async (group) => {
   try {
     const resp = await axios.get("https://guap.ru/rasp", {
@@ -63,12 +62,28 @@ getRasp(275).then((res) => {
     /*
         парсим div для назначения преподавателя и группы
     */
+    let divChildrens = divI.children();
+    if (divChildrens.length === 2) {
+      let preps = divChildrens.first().children();
+      let groups = divChildrens.last().children();
+      for (let p = 0; p < preps.length; p++) {
+        // console.log(preps.eq(p).attr("href"));
+        let key = preps.eq(p).attr("href");
+        let value = preps.eq(p).text();
+        myClassI.teacher[key] = value;
+      }
+    } else {
+      let groups = divChildrens.first();
+    }
+
+    /*
+        добавляем полученный объект в массив всех пар группы
+    */
     allStudies.push(myClassI);
   }
   /*
       заполняем другие категории
   */
-  let resChildrens = $res.children();
   let listH3 = $res.find("h3");
   let listH4 = $res.find("h4");
   let lastStudyIndex = 0;
