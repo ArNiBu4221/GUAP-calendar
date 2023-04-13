@@ -60,12 +60,41 @@ getRasp(275).then((res) => {
       myClassI.weekDirection = "both";
       myClassI.type = spanChildrens.eq(0).text();
     }
+    /*
+        парсим div для назначения преподавателя и группы
+    */
     allStudies.push(myClassI);
-    //console.log(spanI.toString(), "\n");
-    // console.log(divI.toString(), "\n");
   }
   /*
-      заполняем номера пар
+      заполняем другие категории
   */
-
+  let resChildrens = $res.children();
+  let listH3 = $res.find("h3");
+  let listH4 = $res.find("h4");
+  let lastStudyIndex = 0;
+  let lastStudyIndexH4 = 0;
+  /*
+      заполняем дни недели
+  */
+  for (let i = 0; i < listH3.length; i++) {
+    let day = listH3.eq(i).nextUntil("h3");
+    let listStudyClass = day.filter(".study");
+    // заполняем день недели
+    for (let j = lastStudyIndex; j < lastStudyIndex + listStudyClass.length; j++) {
+      allStudies[j].day = listH3.eq(i).text();
+    }
+    lastStudyIndex = lastStudyIndex + listStudyClass.length;
+  }
+  /*
+      заполняем время пары
+  */
+  for (let i = 0; i < listH4.length; i++) {
+    let part = listH4.eq(i).nextUntil("h4").not("h3");
+    // console.log(part.length);
+    for (let j = lastStudyIndexH4; j < lastStudyIndexH4 + part.length; j++) {
+      allStudies[j].numberOfClass = listH4.eq(i).text();
+    }
+    lastStudyIndexH4 = lastStudyIndexH4 + part.length;
+  }
+  console.log(allStudies);
 });
