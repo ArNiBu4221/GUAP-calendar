@@ -72,8 +72,18 @@ getRasp(275).then((res) => {
         let value = preps.eq(p).text();
         myClassI.teacher[key] = value;
       }
+      for (let p = 0; p < groups.length; p++) {
+        let key = groups.eq(p).attr("href");
+        let value = groups.eq(p).text();
+        myClassI.groups[key] = value;
+      }
     } else {
       let groups = divChildrens.first();
+      for (let p = 0; p < groups.length; p++) {
+        let key = groups.eq(p).attr("href");
+        let value = groups.eq(p).text();
+        myClassI.groups[key] = value;
+      }
     }
 
     /*
