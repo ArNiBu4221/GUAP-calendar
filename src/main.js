@@ -5,10 +5,12 @@ import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { firebaseConfig } from "../firebase/firebase.config";
 import { VueFire } from "vuefire";
+const cors = require("cors");
 
 const firebaseApp = initializeApp(firebaseConfig);
 const db = getFirestore(firebaseApp);
 const app = createApp(App);
 app.use(router).use(VueFire, { firebaseApp, modules: [] }).mount("#app");
+app.use(cors());
 
 export { db };
