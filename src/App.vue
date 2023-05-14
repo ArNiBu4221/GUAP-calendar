@@ -1,15 +1,27 @@
 <template>
-  <nav>
-    <router-link to="/">Home</router-link> |
-    <router-link to="/about">ToDo</router-link> |
-    <router-link to="/parser">Parser</router-link>
-  </nav>
+  <div class="column">
+    <nav
+      class="navbar is-primary is-spaced"
+      role="navigation"
+      aria-label="main navigation"
+    >
+      <div class="navbar-menu">
+        <div class="navbar-start">
+          <router-link to="/" class="navbar-item">Home</router-link>
+          <div class="navbar-item">|</div>
+          <router-link to="/about" class="navbar-item">ToDo</router-link>
+          <div class="navbar-item">|</div>
+          <router-link to="/parser" class="navbar-item">Parser</router-link>
+        </div>
+      </div>
+    </nav>
+  </div>
   <router-view />
 </template>
 
 <style>
+@import "../node_modules/bulma/css/bulma.min.css";
 nav {
-  text-align: center;
-  margin: 1.5% auto;
+  border-radius: 20px;
 }
 </style>
