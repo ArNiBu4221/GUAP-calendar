@@ -1,4 +1,5 @@
 <template>
+  <h1 class="title has-text-centered">Тут мог бы быть ваш парсер</h1>
   <div class="columns">
     <div class="column has-text-right">
       <div class="select">
@@ -473,16 +474,23 @@
       <div @click="getRasp(group)" class="button is-centered is-primary">
         Получить расписание
       </div>
-  <h1 class="title has-text-centered">Тут мог бы быть ваш парсер</h1>
-  <div class="column has-text-centered">
-    <div @click="getRasp()" class="button is-centered is-primary">
-      Получить расписание
     </div>
   </div>
+  <div id="calendar" class="column is-10 is-offset-1 has-text-centered">
+    <Calendar expanded />
+  </div>
 </template>
+
 <script>
 /*
     parser imports
+*/
+
+import { Calendar } from "v-calendar";
+import "v-calendar/dist/style.css";
+
+/*
+  code
 */
 
 /*
@@ -490,6 +498,14 @@
 */
 export default {
   name: "ParserView",
+  components: {
+    Calendar,
+  },
+  data() {
+    return {
+      date: new Date(),
+    };
+  },
 };
 </script>
 
@@ -497,9 +513,10 @@ export default {
 const axios = require("axios");
 import { raspProcess } from "@/parser_test";
 
-const getRasp = () => {
+const group = 0;
+const getRasp = (group) => {
   axios
-    .get("http://localhost:8080/rasp/?g=275")
+    .get(`http://localhost:8080/rasp/?g=${group}`)
     .then((response) => {
       console.log("****SUCCSESS***");
       raspProcess(response);
