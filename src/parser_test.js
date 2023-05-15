@@ -1,6 +1,6 @@
 const cheerio = require("cheerio");
 
-const raspProcess = (resp) => {
+const raspProcess = (resp, arr) => {
   console.log("Beginning to process rasp");
   const $ = cheerio.load(resp.data);
   const $res = $(".result");
@@ -111,7 +111,8 @@ const raspProcess = (resp) => {
     }
     lastStudyIndexH4 = lastStudyIndexH4 + part.length;
   }
-  console.log(allStudies);
+  arr = allStudies;
+  console.log(arr);
 };
 
 export { raspProcess };

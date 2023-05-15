@@ -477,7 +477,24 @@
     </div>
   </div>
   <div id="calendar" class="column is-10 is-offset-1 has-text-centered">
-    <Calendar expanded />
+    <Calendar expanded :attributes="attributes">
+      <template #day-popover="{ dayTitle }">
+        <div class="px-1">
+          <div class="has-text-grey-dark has-text-centered">
+            {{ dayTitle }}
+          </div>
+          <ul>
+            <li
+              v-for="{ key, customData } in attributes"
+              :key="key"
+              class="block"
+            >
+              {{ customData.description }}
+            </li>
+          </ul>
+        </div>
+      </template>
+    </Calendar>
   </div>
 </template>
 
@@ -510,22 +527,82 @@ export default {
 </script>
 
 <script setup>
+import { ref, computed } from "vue";
+
 const axios = require("axios");
 import { raspProcess } from "@/parser_test";
 
 const group = 0;
+const raspArray = [];
 const getRasp = (group) => {
   axios
     .get(`http://localhost:8080/rasp/?g=${group}`)
     .then((response) => {
       console.log("****SUCCSESS***");
-      raspProcess(response);
+      raspProcess(response, raspArray);
     })
     .catch((e) => {
       console.log("***ERROR****");
       console.log(e);
     });
+  console.log(raspArray);
 };
+
+/*объект пары для вставки в календарь
+ * {
+ *   title:
+ *   description: ""
+ *   teacher: {}
+ *   numberOfPair:
+ *   weekDirection: 0 (четная) | 1 (нечетная) | 2 (обе)
+ *   place: ""
+ *   type: ""
+ *   groups: {}
+ *   startTime:
+ *   endTime:
+ *   dates: [
+ *     {
+ *       start:
+ *       end:
+ *       repeat: {
+ *         every: [2, "weeks"] if 0 or 1 | "weeks" if 2
+ *         weekdays: obj.dayOfWeek
+ *       },
+ *     },
+ *   ],
+ *   color: "",
+ * },
+ */
+
+const todos = ref([
+  {
+    description: "Take Noah to basketball practice.",
+    isComplete: false,
+    dates: [
+      {
+        repeat: {
+          every: "week",
+          // on: ({ weekday }) => weekday === 6,
+          weekdays: 6,
+        },
+      },
+    ], // Every Friday
+    color: "red",
+  },
+]);
+
+const attributes = computed(() => [
+  // Attributes for todos
+  ...todos.value.map((todo) => ({
+    dates: todo.dates,
+    dot: {
+      color: todo.color,
+      class: todo.isComplete ? "opacity-75" : "",
+    },
+    popover: true,
+    customData: todo,
+  })),
+]);
 </script>
 
 <style scoped>
