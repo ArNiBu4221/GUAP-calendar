@@ -12,6 +12,8 @@
           <router-link to="/about" class="navbar-item">ToDo</router-link>
           <div class="navbar-item">|</div>
           <router-link to="/parser" class="navbar-item">Parser</router-link>
+          <div class="navbar-item">|</div>
+          <router-link to="/calendar" class="navbar-item">Calendar</router-link>
         </div>
       </div>
     </nav>
