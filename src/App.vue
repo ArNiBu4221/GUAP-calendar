@@ -18,12 +18,17 @@
       </div>
     </nav>
   </div>
+  <nav>
+    <router-link to="/">Home</router-link> |
+    <router-link to="/about">ToDo</router-link> |
+    <router-link to="/parser">Parser</router-link>
+  </nav>
   <router-view />
 </template>
 
 <style>
-@import "../node_modules/bulma/css/bulma.min.css";
 nav {
-  border-radius: 20px;
+  text-align: center;
+  margin: 1.5% auto;
 }
 </style>

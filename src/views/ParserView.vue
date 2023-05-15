@@ -473,10 +473,13 @@
       <div @click="getRasp(group)" class="button is-centered is-primary">
         Получить расписание
       </div>
+  <h1 class="title has-text-centered">Тут мог бы быть ваш парсер</h1>
+  <div class="column has-text-centered">
+    <div @click="getRasp()" class="button is-centered is-primary">
+      Получить расписание
     </div>
   </div>
 </template>
-
 <script>
 /*
     parser imports
@@ -494,10 +497,9 @@ export default {
 const axios = require("axios");
 import { raspProcess } from "@/parser_test";
 
-const group = 0;
-const getRasp = (group) => {
+const getRasp = () => {
   axios
-    .get(`http://localhost:8080/rasp/?g=${group}`)
+    .get("http://localhost:8080/rasp/?g=275")
     .then((response) => {
       console.log("****SUCCSESS***");
       raspProcess(response);
