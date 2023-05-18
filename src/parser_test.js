@@ -39,7 +39,7 @@ const raspParser = (resp) => {
     let iner = spanI.contents().filter(function () {
       return this.nodeType === 3;
     });
-    myClassI.name = iner.text();
+    myClassI.name = iner.text().slice(3, -1);
     myClassI.place = spanChildrens.last().text();
     if (spanChildrens.length === 3) {
       myClassI.weekDirection = spanChildrens.eq(0).attr("title");
@@ -111,6 +111,7 @@ const raspParser = (resp) => {
     }
     lastStudyIndexH4 = lastStudyIndexH4 + part.length;
   }
+  console.log(allStudies);
   return allStudies;
 };
 

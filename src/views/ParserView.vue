@@ -488,16 +488,24 @@
           <div class="has-text-grey-dark has-text-centered">
             {{ dayTitle }}
           </div>
-          <ul>
-            <template v-for="{ key, customData } in attributes" :key="key">
-              <li
-                class="block"
-                v-if="selectedDay.date.getDay() + 1 === customData.dayOfWeek"
-              >
-                {{ customData.title }}
-              </li>
-            </template>
-          </ul>
+          <table class="table has-text-left is-striped table-container">
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Event</th>
+              </tr>
+            </thead>
+            <tbody>
+              <template v-for="{ key, customData } in attributes" :key="key">
+                <tr
+                  v-if="selectedDay.date.getDay() + 1 === customData.dayOfWeek"
+                >
+                  <td>{{ customData.startTime }} - {{ customData.endTime }}</td>
+                  <td>{{ customData.title }}</td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
         </div>
       </template>
     </Calendar>
@@ -617,12 +625,20 @@ const raspProcessing = (raspArray) => {
     studyObj.dayOfWeek = dayOfweekProcessing(raspArray[study].day);
     let str = raspArray[study].numberOfClass;
     studyObj.numberOfClass = Number(str[0]);
-    for (let i = 0; i < str.length; i++) {
+    if (str[0] !== "в" && str[0] !== "1") {
+      studyObj.startTime = str.slice(8, 13);
+      studyObj.endTime = str.slice(14, -1);
+    } else if (str[0] !== "в") {
+      studyObj.startTime = str.slice(8, 12);
+      studyObj.endTime = str.slice(13, -1);
+    }
+    /*for (let i = 0; i < str.length; i++) {
       if (str[i] === "9") {
         studyObj.startTime = str.slice(i, i + 4);
         studyObj.endTime = str.slice(i + 5, -1);
+        break;
       }
-    }
+    }*/
     if (raspArray[study].weekDirection === "нижняя (четная)") {
       studyObj.weekDirection = 0;
       studyObj.dates = [
@@ -739,7 +755,10 @@ const arr = [
 const attributes = computed(() => [
   ...raspArray.value.map((todo) => ({
     dates: todo.dates,
-    highlight: "purple",
+    highlight: {
+      color: "purple",
+      fillMode: "light",
+    },
     popover: true,
     customData: todo,
   })),
