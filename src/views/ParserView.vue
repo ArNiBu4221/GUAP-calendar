@@ -476,61 +476,71 @@
       </div>
     </div>
   </div>
-  <div id="calendar" class="column is-10 is-offset-1 has-text-centered">
-    <Calendar
-      expanded
-      :first-day-of-week="2"
-      :attributes="attributes"
-      @dayclick="dayClicked"
-    >
-      <template #day-popover="{ dayTitle }">
-        <div class="px-1">
-          <div class="has-text-grey-dark has-text-centered">
-            {{ dayTitle }}
+  <div class="columns mx-1 is-1">
+    <div class="column">
+      <div id="topLeft-panel" class="card column">
+        <div class="card-content">
+          <input
+            class="input column is-full"
+            type="text"
+            placeholder="Заголовок события"
+          />
+          <div class="column">
+            <DatePicker v-model="date" mode="time" is24hr hide-time-header />
           </div>
-          <table class="table has-text-left is-striped table-container">
-            <thead>
-              <tr>
-                <th>Time</th>
-                <th>Event</th>
-              </tr>
-            </thead>
-            <tbody>
-              <template v-for="{ key, customData } in attributes" :key="key">
-                <tr
-                  v-if="selectedDay.date.getDay() + 1 === customData.dayOfWeek"
-                >
-                  <td>{{ customData.startTime }} - {{ customData.endTime }}</td>
-                  <td>{{ customData.title }}</td>
-                </tr>
-              </template>
-            </tbody>
-          </table>
         </div>
-      </template>
-    </Calendar>
+      </div>
+      <div id="calendar-block" class="column">
+        <Calendar
+          expanded
+          :first-day-of-week="2"
+          :attributes="attributes"
+          @dayclick="dayClicked"
+        >
+          <template #day-popover="{ dayTitle }">
+            <div class="px-1">
+              <div class="has-text-grey-dark has-text-centered">
+                {{ dayTitle }}
+              </div>
+              <table class="table has-text-left is-striped table-container">
+                <thead>
+                  <tr>
+                    <th>Time</th>
+                    <th>Event</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <template
+                    v-for="{ key, customData } in attributes"
+                    :key="key"
+                  >
+                    <tr
+                      v-if="
+                        selectedDay.date.getDay() + 1 === customData.dayOfWeek
+                      "
+                    >
+                      <td>
+                        {{ customData.startTime }} - {{ customData.endTime }}
+                      </td>
+                      <td>{{ customData.title }}</td>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
+            </div>
+          </template>
+        </Calendar>
+      </div>
+    </div>
+    <div id="right-panel" class="card column">
+      <div class="card-content">ы</div>
+    </div>
   </div>
 </template>
 
 <script>
-/*
-    parser imports
-*/
-
-import { Calendar } from "v-calendar";
-import "v-calendar/dist/style.css";
-/*
-  code
-*/
-
-/*
-    Vue exports
-*/
 export default {
   name: "ParserView",
-  components: {
-    Calendar,
-  },
   data() {
     return {
       date: new Date(),
@@ -540,6 +550,8 @@ export default {
 </script>
 
 <script setup>
+import { Calendar, DatePicker } from "v-calendar";
+import "v-calendar/dist/style.css";
 import { ref, computed, onMounted } from "vue";
 const axios = require("axios");
 import { raspParser } from "@/parser_test";
@@ -578,31 +590,6 @@ const getRasp = async (gr) => {
       console.log(e);
     });
 };
-/*объект пары для вставки в календарь
- * {
- *   name:
- *   description: ""
- *   teacher: {}
- *   numberOfPair:
- *   weekDirection: 0 (четная) | 1 (нечетная) | 2 (обе)
- *   place: ""
- *   type: ""
- *   groups: {}
- *   startTime:
- *   endTime:
- *   dates: [
- *     {
- *       start:
- *       end:
- *       repeat: {
- *         every: [2, "weeks"] if 0 or 1 | "weeks" if 2
- *         weekdays: obj.dayOfWeek
- *       },
- *     },
- *   ],
- *   color: "",
- * },
- */
 
 const raspProcessing = (raspArray) => {
   let calendarFormattedRasp = [];
@@ -632,19 +619,10 @@ const raspProcessing = (raspArray) => {
       studyObj.startTime = str.slice(8, 12);
       studyObj.endTime = str.slice(13, -1);
     }
-    /*for (let i = 0; i < str.length; i++) {
-      if (str[i] === "9") {
-        studyObj.startTime = str.slice(i, i + 4);
-        studyObj.endTime = str.slice(i + 5, -1);
-        break;
-      }
-    }*/
     if (raspArray[study].weekDirection === "нижняя (четная)") {
       studyObj.weekDirection = 0;
       studyObj.dates = [
         {
-          // start: new Date(2023, 1, 1),
-          // end: new Date(2023, 7, 1),
           repeat: {
             every: [2, "weeks"],
             weekdays: studyObj.dayOfWeek,
@@ -655,8 +633,6 @@ const raspProcessing = (raspArray) => {
       studyObj.weekDirection = 1;
       studyObj.dates = [
         {
-          // start: new Date(2023, 1, 2),
-          // end: new Date(2023, 7, 1),
           repeat: {
             every: [2, "weeks"],
             weekdays: studyObj.dayOfWeek,
@@ -702,56 +678,6 @@ const dayOfweekProcessing = (dayOfWeek) => {
   }
 };
 
-/*
-const arr = [
-  {
-    title: "Пупа и лупа",
-    isComplete: false,
-    dates: [
-      {
-        repeat: {
-          every: "week",
-          // on: ({ weekday }) => weekday === 6,
-          weekdays: 3,
-        },
-      },
-    ], // Every Friday
-    color: "red",
-    dayOfWeek: 3,
-  },
-  {
-    title: "Лупа и пупа.",
-    isComplete: false,
-    dates: [
-      {
-        repeat: {
-          every: "week",
-          // on: ({ weekday }) => weekday === 6,
-          weekdays: 5,
-        },
-      },
-    ], // Every Friday
-    color: "red",
-    dayOfWeek: 5,
-  },
-  {
-    title: "купа и залупа",
-    isComplete: false,
-    dates: [
-      {
-        repeat: {
-          every: "week",
-          // on: ({ weekday }) => weekday === 6,
-          weekdays: 3,
-        },
-      },
-    ], // Every Friday
-    color: "red",
-    dayOfWeek: 3,
-  },
-];
-*/
-
 const attributes = computed(() => [
   ...raspArray.value.map((todo) => ({
     dates: todo.dates,
@@ -764,29 +690,6 @@ const attributes = computed(() => [
   })),
 ]);
 
-/*const daysInMatrixForm = daySpread(attributes);
-console.log(daysInMatrixForm);
-
-const daySpread = (someArr) => {
-  let daysMatrix = [];
-  let oneDay = [someArr[0]];
-  let dayOfWeekIterator = someArr[0].customData.dayOfWeek;
-  for (let i = 1; i < someArr.length; i++) {
-    if (dayOfWeekIterator === someArr[i].customData.dayOfWeek) {
-      oneDay.push(someArr[i]);
-    } else {
-      daysMatrix.push(oneDay);
-      oneDay.length = 0;
-      oneDay.push(someArr[i]);
-      dayOfWeekIterator = someArr[i].customData.dayOfWeek;
-    }
-  }
-  return daysMatrix;
-};*/
-// const rasp = raspProcessing(raspArray);
-
-// const todos = ref(arr);
-
 let selectedDay;
 const dayClicked = (day) => {
   selectedDay = day;
@@ -796,7 +699,14 @@ const dayClicked = (day) => {
 
 <style scoped>
 @import "../../node_modules/bulma/css/bulma.min.css";
-li {
-  margin: 0 auto;
+#right-panel {
+  border-radius: 10px;
 }
+#topLeft-panel {
+  border-radius: 10px;
+}
+
+/*
+  style rules for tim-picker
+*/
 </style>
