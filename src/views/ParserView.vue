@@ -3,7 +3,7 @@
   <div class="columns">
     <div class="column has-text-right">
       <div class="select">
-        <select v-model="group">
+        <select v-model="_group">
           <option disabled value="">Выберите группу</option>
           <option value="-1">- нет -</option>
           <option value="1">1011</option>
@@ -471,26 +471,32 @@
       </div>
     </div>
     <div class="column has-text-left">
-      <div @click="getRasp(group)" class="button is-centered is-primary">
+      <div @click="getRasp(_group)" class="button is-centered is-primary">
         Получить расписание
       </div>
     </div>
   </div>
   <div id="calendar" class="column is-10 is-offset-1 has-text-centered">
-    <Calendar expanded :attributes="attributes">
+    <Calendar
+      expanded
+      :first-day-of-week="2"
+      :attributes="attributes"
+      @dayclick="dayClicked"
+    >
       <template #day-popover="{ dayTitle }">
         <div class="px-1">
           <div class="has-text-grey-dark has-text-centered">
             {{ dayTitle }}
           </div>
           <ul>
-            <li
-              v-for="{ key, customData } in attributes"
-              :key="key"
-              class="block"
-            >
-              {{ customData.description }}
-            </li>
+            <template v-for="{ key, customData } in attributes" :key="key">
+              <li
+                class="block"
+                v-if="selectedDay.date.getDay() + 1 === customData.dayOfWeek"
+              >
+                {{ customData.title }}
+              </li>
+            </template>
           </ul>
         </div>
       </template>
@@ -505,7 +511,6 @@
 
 import { Calendar } from "v-calendar";
 import "v-calendar/dist/style.css";
-
 /*
   code
 */
@@ -527,30 +532,47 @@ export default {
 </script>
 
 <script setup>
-import { ref, computed } from "vue";
-
+import { ref, computed, onMounted } from "vue";
 const axios = require("axios");
-import { raspProcess } from "@/parser_test";
+import { raspParser } from "@/parser_test";
+import { getDoc, doc, updateDoc, onSnapshot } from "firebase/firestore";
+import { db } from "@/main";
 
-const group = 0;
-const raspArray = [];
-const getRasp = (group) => {
+const raspArray = ref([]);
+const _group = ref(0);
+
+const usrRef = doc(db, "Users", "User1");
+
+onMounted(() => {
+  onSnapshot(usrRef, (doc) => {
+    let g = 0;
+    g = doc.data().group;
+    _group.value = g;
+    console.log("Cashed group's code = " + g);
+  });
+  getRasp(_group);
+});
+
+const getRasp = async (gr) => {
+  const usrDoc = await getDoc(usrRef);
+  let cnt = 0;
+  await updateDoc(usrRef, { group: _group.value });
   axios
-    .get(`http://localhost:8080/rasp/?g=${group}`)
+    .get(`http://localhost:8080/rasp/?g=${gr}`)
     .then((response) => {
       console.log("****SUCCSESS***");
-      raspProcess(response, raspArray);
+      raspArray.value = raspProcessing(raspParser(response));
+      console.log(raspArray.value);
+      console.log(attributes.value);
     })
     .catch((e) => {
       console.log("***ERROR****");
       console.log(e);
     });
-  console.log(raspArray);
 };
-
 /*объект пары для вставки в календарь
  * {
- *   title:
+ *   name:
  *   description: ""
  *   teacher: {}
  *   numberOfPair:
@@ -574,37 +596,188 @@ const getRasp = (group) => {
  * },
  */
 
-const todos = ref([
+const raspProcessing = (raspArray) => {
+  let calendarFormattedRasp = [];
+  for (let study in raspArray) {
+    let studyObj = {
+      key: study,
+      title: raspArray[study].name,
+      dayOfWeek: null,
+      weekDirection: null,
+      numberOfClass: null,
+      type: raspArray[study].type,
+      place: raspArray[study].place,
+      teacher: raspArray[study].teacher,
+      groups: raspArray[study].groups,
+      startTime: "",
+      endTime: "",
+      dates: [],
+      color: "purple",
+    };
+    studyObj.dayOfWeek = dayOfweekProcessing(raspArray[study].day);
+    let str = raspArray[study].numberOfClass;
+    studyObj.numberOfClass = Number(str[0]);
+    for (let i = 0; i < str.length; i++) {
+      if (str[i] === "9") {
+        studyObj.startTime = str.slice(i, i + 4);
+        studyObj.endTime = str.slice(i + 5, -1);
+      }
+    }
+    if (raspArray[study].weekDirection === "нижняя (четная)") {
+      studyObj.weekDirection = 0;
+      studyObj.dates = [
+        {
+          // start: new Date(2023, 1, 1),
+          // end: new Date(2023, 7, 1),
+          repeat: {
+            every: [2, "weeks"],
+            weekdays: studyObj.dayOfWeek,
+          },
+        },
+      ];
+    } else if (raspArray[study].weekDirection === "верхняя (нечетная)") {
+      studyObj.weekDirection = 1;
+      studyObj.dates = [
+        {
+          // start: new Date(2023, 1, 2),
+          // end: new Date(2023, 7, 1),
+          repeat: {
+            every: [2, "weeks"],
+            weekdays: studyObj.dayOfWeek,
+          },
+        },
+      ];
+    } else if (raspArray[study].weekDirection === "both") {
+      studyObj.weekDirection = 1;
+      studyObj.dates = [
+        {
+          // start: new Date(2023, 1, 1),
+          // end: new Date(2023, 7, 1),
+          repeat: {
+            every: "week",
+            weekdays: studyObj.dayOfWeek,
+          },
+        },
+      ];
+    }
+    calendarFormattedRasp.push(studyObj);
+  }
+  return calendarFormattedRasp;
+};
+
+const dayOfweekProcessing = (dayOfWeek) => {
+  switch (dayOfWeek) {
+    case "Воскресенье":
+      return 1;
+    case "Понедельник":
+      return 2;
+    case "Вторник":
+      return 3;
+    case "Среда":
+      return 4;
+    case "Четверг":
+      return 5;
+    case "Пятница":
+      return 6;
+    case "Суббота":
+      return 7;
+    default:
+      return -1;
+  }
+};
+
+/*
+const arr = [
   {
-    description: "Take Noah to basketball practice.",
+    title: "Пупа и лупа",
     isComplete: false,
     dates: [
       {
         repeat: {
           every: "week",
           // on: ({ weekday }) => weekday === 6,
-          weekdays: 6,
+          weekdays: 3,
         },
       },
     ], // Every Friday
     color: "red",
+    dayOfWeek: 3,
   },
-]);
+  {
+    title: "Лупа и пупа.",
+    isComplete: false,
+    dates: [
+      {
+        repeat: {
+          every: "week",
+          // on: ({ weekday }) => weekday === 6,
+          weekdays: 5,
+        },
+      },
+    ], // Every Friday
+    color: "red",
+    dayOfWeek: 5,
+  },
+  {
+    title: "купа и залупа",
+    isComplete: false,
+    dates: [
+      {
+        repeat: {
+          every: "week",
+          // on: ({ weekday }) => weekday === 6,
+          weekdays: 3,
+        },
+      },
+    ], // Every Friday
+    color: "red",
+    dayOfWeek: 3,
+  },
+];
+*/
 
 const attributes = computed(() => [
-  // Attributes for todos
-  ...todos.value.map((todo) => ({
+  ...raspArray.value.map((todo) => ({
     dates: todo.dates,
-    dot: {
-      color: todo.color,
-      class: todo.isComplete ? "opacity-75" : "",
-    },
+    highlight: "purple",
     popover: true,
     customData: todo,
   })),
 ]);
+
+/*const daysInMatrixForm = daySpread(attributes);
+console.log(daysInMatrixForm);
+
+const daySpread = (someArr) => {
+  let daysMatrix = [];
+  let oneDay = [someArr[0]];
+  let dayOfWeekIterator = someArr[0].customData.dayOfWeek;
+  for (let i = 1; i < someArr.length; i++) {
+    if (dayOfWeekIterator === someArr[i].customData.dayOfWeek) {
+      oneDay.push(someArr[i]);
+    } else {
+      daysMatrix.push(oneDay);
+      oneDay.length = 0;
+      oneDay.push(someArr[i]);
+      dayOfWeekIterator = someArr[i].customData.dayOfWeek;
+    }
+  }
+  return daysMatrix;
+};*/
+// const rasp = raspProcessing(raspArray);
+
+// const todos = ref(arr);
+
+let selectedDay;
+const dayClicked = (day) => {
+  selectedDay = day;
+  console.log(selectedDay.date.getDay());
+};
 </script>
 
 <style scoped>
 @import "../../node_modules/bulma/css/bulma.min.css";
+li {
+  margin: 0 auto;
+}
 </style>
