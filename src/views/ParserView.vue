@@ -1,5 +1,5 @@
 <template>
-  <h1 class="title has-text-centered">Тут мог бы быть ваш парсер</h1>
+  <h1 class="title has-text-centered">Выбирете вашу группу</h1>
   <div class="columns">
     <div class="column has-text-right">
       <div class="select">
@@ -481,12 +481,64 @@
       <div id="topLeft-panel" class="card column">
         <div class="card-content">
           <input
-            class="input column is-full"
+            class="input block is-full"
             type="text"
             placeholder="Заголовок события"
           />
-          <div class="column">
-            <DatePicker v-model="date" mode="time" is24hr hide-time-header />
+          <div class="columns is-vcentered">
+            <div class="column is-narrow">С</div>
+            <div class="column">
+              <div id="time-select1" class="columns block">
+                <select
+                  id="left-select"
+                  v-model="startTimePicker"
+                  class="column is-small is-narrow has-background-light"
+                >
+                  <option v-for="i in 23" value="{{i}}" :key="i">
+                    {{ i }}
+                  </option>
+                  <option value="00">00</option>
+                </select>
+                <select
+                  id="right-select"
+                  v-model="endTimePicker"
+                  class="column is-small is-narrow has-background-light"
+                >
+                  <option v-for="j in 59" value="{{j}}" :key="j">
+                    {{ j }}
+                  </option>
+                  <option value="00">00</option>
+                </select>
+              </div>
+            </div>
+            <div class="column is-narrow">До</div>
+            <div class="column">
+              <div id="time-select2" class="columns block">
+                <select
+                  id="left-select"
+                  class="column is-small is-narrow has-background-light"
+                >
+                  <option v-for="i in 23" value="{{i}}" :key="i">
+                    {{ i }}
+                  </option>
+                  <option value="00">00</option>
+                </select>
+                <select
+                  id="right-select"
+                  class="column is-small is-narrow has-background-light"
+                >
+                  <option v-for="j in 59" value="{{j}}" :key="j">
+                    {{ j }}
+                  </option>
+                  <option value="00">00</option>
+                </select>
+              </div>
+            </div>
+            <div v-if="selectedDay !== null" class="column">
+              {{ selectedDay.date.toDateString() }}
+            </div>
+            <div v-else class="column">Выберите дату на календаре</div>
+            <button class="button is-primary">Сохранить</button>
           </div>
         </div>
       </div>
@@ -515,6 +567,7 @@
                     :key="key"
                   >
                     <tr
+                      @click="eventSelect(customData)"
                       v-if="
                         selectedDay.date.getDay() + 1 === customData.dayOfWeek
                       "
@@ -533,7 +586,51 @@
       </div>
     </div>
     <div id="right-panel" class="card column">
-      <div class="card-content">ы</div>
+      <div class="card-content" v-if="selectedEvent !== null">
+        <div class="block">
+          <p class="title has-text-centered">{{ selectedEvent.title }}</p>
+          <p v-if="selectedDay !== null" class="subtitle has-text-centered">
+            {{ selectedDay.date.toDateString() }}
+          </p>
+        </div>
+        <div class="block">
+          <div class="columns">
+            <div class="column has-text-centered">
+              <p class="has-text-weight-bold">Время</p>
+            </div>
+            <div class="column">
+              <div class="columns">
+                <p class="column is-narrow">С</p>
+                <p class="column">
+                  {{ selectedEvent.startTime }}
+                </p>
+                <p class="column is-narrow">До</p>
+                <p class="column">
+                  {{ selectedEvent.endTime }}
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="columns">
+            <div class="column has-text-centered">
+              <p class="has-text-weight-bold">Место</p>
+            </div>
+            <div class="column">
+              <p>{{ selectedEvent.place }}</p>
+            </div>
+          </div>
+          <div class="columns is-vcentered">
+            <div class="column has-text-centered">
+              <p class="has-text-weight-bold">Преподаватель</p>
+            </div>
+            <div class="column">
+              <p v-for="key in selectedEvent.teacher" :key="key">
+                {{ key }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -550,7 +647,7 @@ export default {
 </script>
 
 <script setup>
-import { Calendar, DatePicker } from "v-calendar";
+import { Calendar } from "v-calendar";
 import "v-calendar/dist/style.css";
 import { ref, computed, onMounted } from "vue";
 const axios = require("axios");
@@ -690,10 +787,22 @@ const attributes = computed(() => [
   })),
 ]);
 
-let selectedDay;
+let selectedDay = ref(null);
 const dayClicked = (day) => {
-  selectedDay = day;
-  console.log(selectedDay.date.getDay());
+  if (day !== selectedDay.value) {
+    selectedDay.value = day;
+  } else {
+    selectedDay.value = null;
+  }
+};
+
+const startTimePicker = "";
+const endTimePicker = "";
+
+let selectedEvent = ref(null);
+const eventSelect = (data) => {
+  selectedEvent.value = data;
+  console.log(selectedEvent.value);
 };
 </script>
 
@@ -709,4 +818,20 @@ const dayClicked = (day) => {
 /*
   style rules for tim-picker
 */
+#time-select1 select,
+#time-select1 option {
+  border: 1px;
+}
+#time-select2 select,
+#time-select2 option {
+  border: 1px;
+}
+#left-select {
+  border-top-left-radius: 10px;
+  border-bottom-left-radius: 10px;
+}
+#right-select {
+  border-top-right-radius: 10px;
+  border-bottom-right-radius: 10px;
+}
 </style>
