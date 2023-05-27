@@ -1,6 +1,6 @@
 <template>
   <div class="toDo">
-    <div class="title has-text-centered">ToDo List</div>
+    <div class="title has-text-centered">Список задач</div>
     <form @submit.prevent="addTodo">
       <div class="field is-grouped mb-5">
         <p class="control is-expanded">
@@ -8,12 +8,12 @@
             v-model="newTodoContent"
             class="input"
             type="text"
-            placeholder="Add ToDo"
+            placeholder="Добавить задачу"
           />
         </p>
         <p class="control">
           <button :disabled="!newTodoContent" class="button is-info">
-            Add
+            Добавить
           </button>
         </p>
       </div>

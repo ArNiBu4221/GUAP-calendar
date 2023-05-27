@@ -1,5 +1,6 @@
 <template>
   <h1 class="title has-text-centered">Выбирете вашу группу</h1>
+  <!-- форма для запроса расписания  -->
   <div class="columns">
     <div class="column has-text-right">
       <div class="select">
@@ -478,70 +479,86 @@
   </div>
   <div class="columns mx-1 is-1">
     <div class="column">
+      <!--  левая врехняя панель для добавления нового события  -->
       <div id="topLeft-panel" class="card column">
         <div class="card-content">
-          <input
-            class="input block is-full"
-            type="text"
-            placeholder="Заголовок события"
-          />
-          <div class="columns is-vcentered">
-            <div class="column is-narrow">С</div>
-            <div class="column">
-              <div id="time-select1" class="columns block">
-                <select
-                  id="left-select"
-                  v-model="startTimePicker"
-                  class="column is-small is-narrow has-background-light"
-                >
-                  <option v-for="i in 23" value="{{i}}" :key="i">
-                    {{ i }}
-                  </option>
-                  <option value="00">00</option>
-                </select>
-                <select
-                  id="right-select"
-                  v-model="endTimePicker"
-                  class="column is-small is-narrow has-background-light"
-                >
-                  <option v-for="j in 59" value="{{j}}" :key="j">
-                    {{ j }}
-                  </option>
-                  <option value="00">00</option>
-                </select>
+          <form @submit.prevent="addNewEvent">
+            <input
+              class="input block is-full"
+              type="text"
+              placeholder="Заголовок события"
+              v-model="newEventTitle"
+            />
+            <!--  выбор времени и подтверждение -->
+            <div class="columns is-vcentered">
+              <div class="column is-narrow">С</div>
+              <div class="column">
+                <div id="time-select1" class="columns block">
+                  <select
+                    id="left-select"
+                    v-model="startTimePickerHours"
+                    class="column is-small is-narrow has-background-light"
+                  >
+                    <option v-for="i in 23" :key="i">
+                      {{ i }}
+                    </option>
+                    <option value="00">00</option>
+                  </select>
+                  <select
+                    id="right-select"
+                    v-model="startTimePickerMinutes"
+                    class="column is-small is-narrow has-background-light"
+                  >
+                    <option v-for="j in 59" :key="j">
+                      {{ j }}
+                    </option>
+                    <option value="00">00</option>
+                  </select>
+                </div>
               </div>
-            </div>
-            <div class="column is-narrow">До</div>
-            <div class="column">
-              <div id="time-select2" class="columns block">
-                <select
-                  id="left-select"
-                  class="column is-small is-narrow has-background-light"
-                >
-                  <option v-for="i in 23" value="{{i}}" :key="i">
-                    {{ i }}
-                  </option>
-                  <option value="00">00</option>
-                </select>
-                <select
-                  id="right-select"
-                  class="column is-small is-narrow has-background-light"
-                >
-                  <option v-for="j in 59" value="{{j}}" :key="j">
-                    {{ j }}
-                  </option>
-                  <option value="00">00</option>
-                </select>
+              <div class="column is-narrow">До</div>
+              <div class="column">
+                <div id="time-select2" class="columns block">
+                  <select
+                    id="left-select"
+                    class="column is-small is-narrow has-background-light"
+                    v-model="endTimePickerHours"
+                  >
+                    <option v-for="i in 23" :key="i">
+                      {{ i }}
+                    </option>
+                    <option value="00">00</option>
+                  </select>
+                  <select
+                    id="right-select"
+                    class="column is-small is-narrow has-background-light"
+                    v-model="endTimePickerMinutes"
+                  >
+                    <option v-for="j in 59" :key="j">
+                      {{ j }}
+                    </option>
+                    <option value="00">00</option>
+                  </select>
+                </div>
               </div>
+              <!--  отображение выбранной даты  -->
+              <div v-if="selectedDay !== null" class="column">
+                {{ selectedDay.date.toDateString() }}
+              </div>
+              <div v-else class="column">Выберите дату на календаре</div>
+              <p class="control">
+                <button
+                  :disabled="!newEventTitle || !selectedDay"
+                  class="button is-info"
+                >
+                  Сохранить
+                </button>
+              </p>
             </div>
-            <div v-if="selectedDay !== null" class="column">
-              {{ selectedDay.date.toDateString() }}
-            </div>
-            <div v-else class="column">Выберите дату на календаре</div>
-            <button class="button is-primary">Сохранить</button>
-          </div>
+          </form>
         </div>
       </div>
+      <!--  левая нижняя панель (сам календарь)  -->
       <div id="calendar-block" class="column">
         <Calendar
           expanded
@@ -585,6 +602,7 @@
         </Calendar>
       </div>
     </div>
+    <!--  правая панель, отображающая полную информацию о событии-->
     <div id="right-panel" class="card column">
       <div class="card-content" v-if="selectedEvent !== null">
         <div class="block">
@@ -611,7 +629,7 @@
               </div>
             </div>
           </div>
-          <div class="columns">
+          <div class="columns" v-if="selectedEvent.place">
             <div class="column has-text-centered">
               <p class="has-text-weight-bold">Место</p>
             </div>
@@ -619,7 +637,7 @@
               <p>{{ selectedEvent.place }}</p>
             </div>
           </div>
-          <div class="columns is-vcentered">
+          <div class="columns is-vcentered" v-if="selectedEvent.place">
             <div class="column has-text-centered">
               <p class="has-text-weight-bold">Преподаватель</p>
             </div>
@@ -652,22 +670,48 @@ import "v-calendar/dist/style.css";
 import { ref, computed, onMounted } from "vue";
 const axios = require("axios");
 import { raspParser } from "@/parser_test";
-import { getDoc, doc, updateDoc, onSnapshot } from "firebase/firestore";
+import {
+  getDoc,
+  doc,
+  updateDoc,
+  onSnapshot,
+  collection,
+  addDoc,
+} from "firebase/firestore";
 import { db } from "@/main";
 
 const raspArray = ref([]);
 const _group = ref(0);
 
 const usrRef = doc(db, "Users", "User1");
+const calendarRef = collection(db, "/Users/User1/Calendars/Calendar1/Events");
+
+const eventsArray = ref([]);
 
 onMounted(() => {
   onSnapshot(usrRef, (doc) => {
     let g = 0;
     g = doc.data().group;
     _group.value = g;
+    getRasp(_group);
     console.log("Cashed group's code = " + g);
   });
-  getRasp(_group);
+  onSnapshot(calendarRef, (querySnapshot) => {
+    const fbEvents = [];
+    querySnapshot.forEach((ev) => {
+      const event = {
+        id: ev.id,
+        title: ev.data().title,
+        startTime: ev.data().startTime,
+        endTime: ev.data().endTime,
+        dates: ev.data().date,
+        dot: true,
+        dayOfWeek: ev.data().dayOfWeek,
+      };
+      fbEvents.push(event);
+    });
+    eventsArray.value = fbEvents;
+  });
 });
 
 const getRasp = async (gr) => {
@@ -679,8 +723,9 @@ const getRasp = async (gr) => {
     .then((response) => {
       console.log("****SUCCSESS***");
       raspArray.value = raspProcessing(raspParser(response));
-      console.log(raspArray.value);
-      console.log(attributes.value);
+      console.log("События >> ", eventsArray.value);
+      console.log("Расписание >> ", raspArray.value);
+      console.log("Атрибуты >> ", attributes.value);
     })
     .catch((e) => {
       console.log("***ERROR****");
@@ -785,6 +830,12 @@ const attributes = computed(() => [
     popover: true,
     customData: todo,
   })),
+  ...eventsArray.value.map((ev) => ({
+    dates: ev.dates,
+    dot: true,
+    popover: true,
+    customData: ev,
+  })),
 ]);
 
 let selectedDay = ref(null);
@@ -796,8 +847,31 @@ const dayClicked = (day) => {
   }
 };
 
-const startTimePicker = "";
-const endTimePicker = "";
+/*
+
+    создание нового события
+
+*/
+const startTimePickerHours = ref(0);
+const startTimePickerMinutes = ref(0);
+const endTimePickerHours = ref(0);
+const endTimePickerMinutes = ref(0);
+const newEventTitle = ref("");
+
+const addNewEvent = () => {
+  addDoc(collection(db, "/Users/User1/Calendars/Calendar1/Events"), {
+    title: newEventTitle.value,
+    date: selectedDay.value.date.toDateString(),
+    startTime: startTimePickerHours.value + ":" + startTimePickerMinutes.value,
+    endTime: endTimePickerHours.value + ":" + endTimePickerMinutes.value,
+    dayOfWeek: selectedDay.value.date.getDay() + 1,
+  });
+  newEventTitle.value = "";
+  startTimePickerHours.value = 0;
+  startTimePickerMinutes.value = 0;
+  endTimePickerHours.value = 0;
+  endTimePickerMinutes.value = 0;
+};
 
 let selectedEvent = ref(null);
 const eventSelect = (data) => {

@@ -4,18 +4,7 @@ const raspParser = (resp) => {
   console.log("Beginning to process rasp");
   const $ = cheerio.load(resp.data);
   const $res = $(".result");
-  // const $days = $(".result h3");
   const studies = $res.find(".study");
-  /*const myClass = {
-    day: "",
-    numberOfClass: "",
-    weekDirection: "",
-    type: "",
-    name: "",
-    place: "",
-    teacher: {},
-    groups: {},
-  };*/
 
   const allStudies = [];
   for (let i = 0; i < studies.length; i++) {
@@ -111,7 +100,6 @@ const raspParser = (resp) => {
     }
     lastStudyIndexH4 = lastStudyIndexH4 + part.length;
   }
-  console.log(allStudies);
   return allStudies;
 };
 
