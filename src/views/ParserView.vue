@@ -546,7 +546,12 @@
                 {{ selectedDay.date.toDateString() }}
               </div>
               <div v-else class="column">Выберите дату на календаре</div>
-              <p class="control">
+              <div class="column">
+                <button @click="changeModalStatus()" class="button is-primary">
+                  Полное редактирование
+                </button>
+              </div>
+              <p class="control column">
                 <button
                   :disabled="!newEventTitle || !selectedDay"
                   class="button is-info"
@@ -576,6 +581,8 @@
                   <tr>
                     <th>Time</th>
                     <th>Event</th>
+                    <th></th>
+                    <th></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -586,13 +593,21 @@
                     <tr
                       @click="eventSelect(customData)"
                       v-if="
-                        selectedDay.date.getDay() + 1 === customData.dayOfWeek
+                        (selectedDay.date.getDay() + 1 ===
+                          customData.dayOfWeek &&
+                          !customData.customEvent) ||
+                        (selectedDay.date.toDateString() === customData.dates &&
+                          customData.customEvent)
                       "
                     >
                       <td>
                         {{ customData.startTime }} - {{ customData.endTime }}
                       </td>
                       <td>{{ customData.title }}</td>
+                      <td v-if="customData.weekDirection === 1">▲</td>
+                      <td v-else-if="customData.weekDirection === -1">▼</td>
+                      <td v-else></td>
+                      <td>{{ customData.type }}</td>
                     </tr>
                   </template>
                 </tbody>
@@ -649,6 +664,35 @@
           </div>
         </div>
       </div>
+      <footer
+        v-if="selectedEvent !== null && selectedEvent.customEvent"
+        class="card-footer is-fixed-bottom"
+      >
+        <button
+          @click="deleteEvent(selectedEvent.id)"
+          class="button is-danger card-footer-item"
+        >
+          &cross;
+        </button>
+      </footer>
+    </div>
+  </div>
+  <!-- блок модуля полного создания события -->
+  <div class="modal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+      <header class="modal-card-head">
+        <p class="modal-card-title">Полное редактирование</p>
+        <button class="delete" aria-label="close"></button>
+      </header>
+      <section class="modal-card-body">
+        <p class="title has-text-left">Описание</p>
+        <textarea class="textarea" rows="10"></textarea>
+      </section>
+      <footer class="modal-card-foot">
+        <button class="button is-success">Сохранить изменения</button>
+        <button class="button">Отменить</button>
+      </footer>
     </div>
   </div>
 </template>
@@ -677,6 +721,7 @@ import {
   onSnapshot,
   collection,
   addDoc,
+  deleteDoc,
 } from "firebase/firestore";
 import { db } from "@/main";
 
@@ -707,6 +752,7 @@ onMounted(() => {
         dates: ev.data().date,
         dot: true,
         dayOfWeek: ev.data().dayOfWeek,
+        customEvent: true,
       };
       fbEvents.push(event);
     });
@@ -762,7 +808,7 @@ const raspProcessing = (raspArray) => {
       studyObj.endTime = str.slice(13, -1);
     }
     if (raspArray[study].weekDirection === "нижняя (четная)") {
-      studyObj.weekDirection = 0;
+      studyObj.weekDirection = 1;
       studyObj.dates = [
         {
           repeat: {
@@ -772,7 +818,7 @@ const raspProcessing = (raspArray) => {
         },
       ];
     } else if (raspArray[study].weekDirection === "верхняя (нечетная)") {
-      studyObj.weekDirection = 1;
+      studyObj.weekDirection = -1;
       studyObj.dates = [
         {
           repeat: {
@@ -782,11 +828,9 @@ const raspProcessing = (raspArray) => {
         },
       ];
     } else if (raspArray[study].weekDirection === "both") {
-      studyObj.weekDirection = 1;
+      studyObj.weekDirection = 0;
       studyObj.dates = [
         {
-          // start: new Date(2023, 1, 1),
-          // end: new Date(2023, 7, 1),
           repeat: {
             every: "week",
             weekdays: studyObj.dayOfWeek,
@@ -858,8 +902,12 @@ const endTimePickerHours = ref(0);
 const endTimePickerMinutes = ref(0);
 const newEventTitle = ref("");
 
+const eventsCollectionRef = collection(
+  db,
+  "/Users/User1/Calendars/Calendar1/Events"
+);
 const addNewEvent = () => {
-  addDoc(collection(db, "/Users/User1/Calendars/Calendar1/Events"), {
+  addDoc(eventsCollectionRef, {
     title: newEventTitle.value,
     date: selectedDay.value.date.toDateString(),
     startTime: startTimePickerHours.value + ":" + startTimePickerMinutes.value,
@@ -871,6 +919,11 @@ const addNewEvent = () => {
   startTimePickerMinutes.value = 0;
   endTimePickerHours.value = 0;
   endTimePickerMinutes.value = 0;
+};
+
+const deleteEvent = (id) => {
+  deleteDoc(doc(eventsCollectionRef, id));
+  selectedEvent = null;
 };
 
 let selectedEvent = ref(null);
