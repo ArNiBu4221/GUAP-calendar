@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from "vue-router";
 import HomeView from "../views/HomeView.vue";
 import ParserView from "@/views/ParserView";
 import AboutView from "@/views/AboutView";
+import TrelloView from "@/views/TrelloView";
 
 const routes = [
   {
@@ -18,6 +19,11 @@ const routes = [
     path: "/parser",
     name: "parser",
     component: ParserView,
+  },
+  {
+    path: "/asTrello",
+    name: "trello",
+    component: TrelloView,
   },
 ];
 

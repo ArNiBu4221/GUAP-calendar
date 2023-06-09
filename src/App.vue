@@ -6,13 +6,19 @@
       aria-label="main navigation"
     >
       <div class="navbar-menu">
-        <div class="navbar-start">
-          <router-link to="/" class="navbar-item">Home</router-link>
-          <div class="navbar-item">|</div>
-          <router-link to="/todo" class="navbar-item">ToDo</router-link>
-          <div class="navbar-item">|</div>
-          <router-link to="/parser" class="navbar-item">Parser</router-link>
-        </div>
+        <router-link to="/" class="navbar-item has-text-light">Дом</router-link>
+        <div class="navbar-item has-text-light">|</div>
+        <router-link to="/todo" class="navbar-item has-text-light"
+          >Задачник</router-link
+        >
+        <div class="navbar-item has-text-light">|</div>
+        <router-link to="/parser" class="navbar-item has-text-light"
+          >Календарь</router-link
+        >
+        <div class="navbar-item has-text-light">|</div>
+        <router-link to="/asTrello" class="navbar-item has-text-light"
+          >Trello</router-link
+        >
       </div>
     </nav>
   </div>
