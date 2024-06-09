@@ -14,10 +14,12 @@
     "cheerio": "^1.0.0-rc.12",
     "core-js": "^3.8.3",
     "cors": "^2.8.5",
+    "feather-icons": "^4.29.2",
     "firebase": "^9.18.0",
     "uuid": "^9.0.0",
     "v-calendar": "^3.0.3",
     "vue": "^3.2.13",
+    "vue-feather": "^2.0.0",
     "vue-router": "^4.0.3",
     "vuefire": "^3.1.0"
   },

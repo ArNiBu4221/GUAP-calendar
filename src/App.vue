@@ -1,5 +1,4 @@
 <template>
-<<<<<<< HEAD
   <div class="column">
     <nav
       class="navbar is-primary is-spaced"
@@ -19,12 +18,10 @@
       </div>
     </nav>
   </div>
-=======
->>>>>>> parent of 7d26c5d (Group select)
   <nav>
-    <router-link to="/">Home</router-link> |
+    <!-- <router-link to="/">Home</router-link> |
     <router-link to="/about">ToDo</router-link> |
-    <router-link to="/parser">Parser</router-link>
+    <router-link to="/parser">Parser</router-link> -->
   </nav>
   <router-view />
 </template>
